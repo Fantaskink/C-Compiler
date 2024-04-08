@@ -22,6 +22,7 @@ typedef enum {
   TOKEN_INT_LITERAL,
   TOKEN_IDENTIFIER,
   TOKEN_FLOAT_LITERAL,
+  TOKEN_STRING_LITERAL,
 
   // Delimiters
   TOKEN_LPAREN,
@@ -53,13 +54,41 @@ typedef enum {
   NUM_TOKENS
 } TokenType;
 
-static const char *token_names[NUM_TOKENS] = {
-    "HEAD",          "INT",    "CHAR",   "FLOAT",  "VOID",        "IF",
-    "ELSE",          "WHILE",  "FOR",    "RETURN", "INT_LITERAL", "IDENTIFIER",
-    "FLOAT_LITERAL", "LPAREN", "RPAREN", "LBRACE", "RBRACE",      "SEMICOLON",
-    "COMMA",         "PLUS",   "MINUS",  "STAR",   "DIV",         "MOD",
-    "ASSIGN",        "LT",     "GT",     "LTE",    "GTE",         "EQ",
-    "NEQ",           "AND",    "OR",     "EOF"};
+static const char *token_names[NUM_TOKENS] = {"HEAD",
+                                              "INT",
+                                              "CHAR",
+                                              "FLOAT",
+                                              "VOID",
+                                              "IF",
+                                              "ELSE",
+                                              "WHILE",
+                                              "FOR",
+                                              "RETURN",
+                                              "INT_LITERAL",
+                                              "IDENTIFIER",
+                                              "FLOAT_LITERAL",
+                                              "STRING_LITERAL",
+                                              "LPAREN",
+                                              "RPAREN",
+                                              "LBRACE",
+                                              "RBRACE",
+                                              "SEMICOLON",
+                                              "COMMA",
+                                              "PLUS",
+                                              "MINUS",
+                                              "STAR",
+                                              "DIV",
+                                              "MOD",
+                                              "ASSIGN",
+                                              "LT",
+                                              "GT",
+                                              "LTE",
+                                              "GTE",
+                                              "EQ",
+                                              "NEQ",
+                                              "AND",
+                                              "OR",
+                                              "EOF"};
 
 typedef struct {
   TokenType type;

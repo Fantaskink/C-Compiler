@@ -45,7 +45,8 @@ void print_list(node_t *head) {
 
     printf("Token type: %s\n", token_names[token_type]);
     if (token_type == TOKEN_IDENTIFIER || token_type == TOKEN_INT_LITERAL ||
-        token_type == TOKEN_FLOAT_LITERAL) {
+        token_type == TOKEN_FLOAT_LITERAL ||
+        token_type == TOKEN_STRING_LITERAL) {
       printf("Value: %s\n", value);
     }
     current = current->next;

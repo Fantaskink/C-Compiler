@@ -151,6 +151,30 @@ Token recognise_special(char c) {
   return token;
 }
 
+Token recognise_string(char c) {
+  Token token;
+  token.type = TOKEN_STRING_LITERAL;
+  int i = 0;
+
+  do {
+    c = next_char();
+
+    token.value[i++] = c;
+
+    if (c == '\"') {
+      token.value[i - 1] = '\0'; // Null-terminate the string
+      break; // Exit the loop upon encountering closing quote
+    }
+
+    if (c == '\n') {
+      fprintf(stderr, "Error: Missing closing '\"'\n");
+      exit(EXIT_FAILURE); // Exiting upon error
+    }
+  } while (c != EOF);
+
+  return token;
+}
+
 Token next_token() {
   char c;
   Token token;
@@ -170,6 +194,10 @@ Token next_token() {
   if (c == EOF) {
     token.type = TOKEN_EOF;
     strcpy(token.value, "EOF");
+  }
+
+  if (c == '"') {
+    return recognise_string(c);
   }
 
   // Ignore comments
