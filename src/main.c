@@ -141,6 +141,9 @@ Token recognise_special(char c) {
   case '>':
     token.type = TOKEN_GT;
     break;
+  case '=':
+    token.type = TOKEN_ASSIGN;
+    break;
   default:
     token.type = TOKEN_EOF; // Assuming EOF for unrecognized characters
     break;
