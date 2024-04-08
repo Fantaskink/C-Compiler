@@ -12,14 +12,23 @@ char next_char() { return fgetc(input_file); }
 
 Token check_reserved(char *value) {
   Token token;
-  if (strcmp(value, "int") == 0) {
-    token.type = TOKEN_INT;
-  } else if (strcmp(value, "float") == 0) {
-    token.type = TOKEN_FLOAT;
-  } else {
-    token.type = TOKEN_IDENTIFIER;
-    strcpy(token.value, value);
+  int i;
+  for (i = 0; i < NUM_TOKENS; i++) {
+    char temp[255];
+    strcpy(temp, token_names[i]);
+
+    for (int j = 0; temp[j]; j++) {
+      temp[j] = tolower(temp[j]);
+    }
+
+    if (strcmp(value, temp) == 0) {
+      token.type = (TokenType)i;
+      return token;
+    }
   }
+
+  token.type = TOKEN_IDENTIFIER;
+  strcpy(token.value, value);
   return token;
 }
 
@@ -72,6 +81,29 @@ Token recognise_eof(char c) {
 
 Token recognise_special(char c) {
   Token token;
+  char next_c = next_char();
+  fseek(input_file, -1, SEEK_CUR);
+  if (next_c == '=') {
+    switch (c) {
+    case '=':
+      token.type = TOKEN_EQ;
+      break;
+    case '!':
+      token.type = TOKEN_NEQ;
+      break;
+    case '<':
+      token.type = TOKEN_LTE;
+      break;
+    case '>':
+      token.type = TOKEN_GTE;
+      break;
+    default:
+      token.type = TOKEN_ASSIGN;
+      break;
+    }
+    return token;
+  }
+
   switch (c) {
   case '+':
     token.type = TOKEN_PLUS;
@@ -97,7 +129,18 @@ Token recognise_special(char c) {
   case ',':
     token.type = TOKEN_COMMA;
     break;
-
+  case '*':
+    token.type = TOKEN_STAR;
+    break;
+  case '/':
+    token.type = TOKEN_DIV;
+    break;
+  case '<':
+    token.type = TOKEN_LT;
+    break;
+  case '>':
+    token.type = TOKEN_GT;
+    break;
   default:
     token.type = TOKEN_EOF; // Assuming EOF for unrecognized characters
     break;
@@ -164,8 +207,6 @@ int main(int argc, char *argv[]) {
   do {
     token = next_token();
     push(&token_list_head, token);
-    // printf("main loop\n");
-    // printf("token value: %s\n", token.value);
   } while (token.type != TOKEN_EOF);
 
   print_list(token_list_head);

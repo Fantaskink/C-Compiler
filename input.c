@@ -1,4 +1,4 @@
 int a(int a, int b) { return a + b; }
-{ waddup }
-// lmao loser
-int b 124()
+// comment test
+for (int i = 0; i < 10; i++) {
+}
