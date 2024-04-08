@@ -3,8 +3,6 @@
 #define VALUE_MAX
 
 typedef enum {
-  TOKEN_HEAD,
-
   // Primitive types
   TOKEN_INT,
   TOKEN_CHAR,
@@ -54,8 +52,7 @@ typedef enum {
   NUM_TOKENS
 } TokenType;
 
-static const char *token_names[NUM_TOKENS] = {"HEAD",
-                                              "INT",
+static const char *token_names[NUM_TOKENS] = {"INT",
                                               "CHAR",
                                               "FLOAT",
                                               "VOID",

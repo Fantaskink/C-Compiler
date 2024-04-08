@@ -228,12 +228,10 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  Token head_token;
-  head_token.type = TOKEN_HEAD;
-
-  node_t *token_list_head = create_node(head_token);
-
   Token token;
+
+  token = next_token();
+  node_t *token_list_head = create_node(token);
 
   do {
     token = next_token();
