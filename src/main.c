@@ -82,7 +82,6 @@ Token recognise_eof(char c) {
 Token recognise_special(char c) {
   Token token;
   char next_c = next_char();
-  fseek(input_file, -1, SEEK_CUR);
   if (next_c == '=') {
     switch (c) {
     case '=':
@@ -104,6 +103,7 @@ Token recognise_special(char c) {
     return token;
   }
 
+  fseek(input_file, -1, SEEK_CUR);
   switch (c) {
   case '+':
     token.type = TOKEN_PLUS;
