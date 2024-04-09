@@ -233,10 +233,10 @@ int main(int argc, char *argv[]) {
   token = next_token();
   node_t *token_list_head = create_node(token);
 
-  do {
+  while (token.type != TOKEN_EOF) {
     token = next_token();
     push(&token_list_head, token);
-  } while (token.type != TOKEN_EOF);
+  }
 
   print_list(token_list_head);
 
