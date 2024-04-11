@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   FILE *file_pointer = fopen(argv[1], "r");
   if (file_pointer == NULL) {
     perror("File not found");
-    ;
+    return EXIT_FAILURE;
   }
 
   node_t *token_list = tokenize_input(file_pointer);

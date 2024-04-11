@@ -199,6 +199,7 @@ Token next_token() {
   if (c == EOF) {
     token.type = TOKEN_EOF;
     strcpy(token.lexeme, "EOF");
+    return token;
   }
 
   if (c == '"') {
