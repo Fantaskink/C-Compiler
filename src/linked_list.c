@@ -41,14 +41,11 @@ void print_list(node_t *head) {
 
   while (current != NULL) {
     TokenType token_type = current->token.type;
-    char *value = current->token.value;
+    char *lexeme = current->token.lexeme;
 
     printf("Token type: %s\n", token_names[token_type]);
-    if (token_type == TOKEN_IDENTIFIER || token_type == TOKEN_INT_LITERAL ||
-        token_type == TOKEN_FLOAT_LITERAL ||
-        token_type == TOKEN_STRING_LITERAL) {
-      printf("Value: %s\n", value);
-    }
+    printf("Lexeme: %s\n", lexeme);
+
     current = current->next;
   }
 }

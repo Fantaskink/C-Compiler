@@ -10,7 +10,7 @@ FILE *input_file;
 
 char next_char() { return fgetc(input_file); }
 
-Token check_reserved(char *lexeme) {
+Token check_reserved(const char *lexeme) {
   Token token;
   int i;
   for (i = 0; i < NUM_TOKENS; i++) {
@@ -23,6 +23,7 @@ Token check_reserved(char *lexeme) {
 
     if (strcmp(lexeme, temp) == 0) {
       token.type = (TokenType)i;
+      strcpy(token.lexeme, token_names[i]);
       return token;
     }
   }
@@ -81,8 +82,11 @@ Token recognise_eof(char c) {
 
 Token recognise_special(char c) {
   Token token;
+  token.lexeme[0] = c;
   char next_c = next_char();
   if (next_c == '=') {
+    token.lexeme[1] = next_c;
+    token.lexeme[2] = '\0';
     switch (c) {
     case '=':
       token.type = TOKEN_EQ;
@@ -105,6 +109,7 @@ Token recognise_special(char c) {
 
   fseek(input_file, -1, SEEK_CUR);
   switch (c) {
+    token.lexeme[1] = '\0';
   case '+':
     token.type = TOKEN_PLUS;
     break;
