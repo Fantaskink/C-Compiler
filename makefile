@@ -5,10 +5,10 @@ CFLAGS =-I$(IDIR)
 ODIR=obj
 LDIR=lib
 
-_DEPS = tokens.h linked_list.h
+_DEPS = tokens.h linked_list.h lexer.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o linked_list.o
+_OBJ = main.o linked_list.o lexer.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: src/%.c $(DEPS)
