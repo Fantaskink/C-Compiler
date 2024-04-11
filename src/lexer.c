@@ -10,7 +10,7 @@ FILE *input_file;
 
 char next_char() { return fgetc(input_file); }
 
-Token check_reserved(char *value) {
+Token check_reserved(char *lexeme) {
   Token token;
   int i;
   for (i = 0; i < NUM_TOKENS; i++) {
@@ -21,14 +21,14 @@ Token check_reserved(char *value) {
       temp[j] = tolower(temp[j]);
     }
 
-    if (strcmp(value, temp) == 0) {
+    if (strcmp(lexeme, temp) == 0) {
       token.type = (TokenType)i;
       return token;
     }
   }
 
   token.type = TOKEN_IDENTIFIER;
-  strcpy(token.value, value);
+  strcpy(token.lexeme, lexeme);
   return token;
 }
 
@@ -36,15 +36,15 @@ Token recognize_alpha(char c) {
   Token token;
   int i = 0;
   do {
-    token.value[i++] = c;
+    token.lexeme[i++] = c;
     c = next_char();
   } while (isalnum(c) || c == '_');
 
-  token.value[i] = '\0';
+  token.lexeme[i] = '\0';
   fseek(input_file, -1, SEEK_CUR);
   token.type = TOKEN_IDENTIFIER;
 
-  token = check_reserved(token.value); // Check if token is reserved
+  token = check_reserved(token.lexeme); // Check if token is reserved
 
   return token;
 }
@@ -53,14 +53,14 @@ Token recognize_number(char c) {
   Token token;
   int i = 0;
   do {
-    token.value[i++] = c;
+    token.lexeme[i++] = c;
     c = next_char();
   } while (isdigit(c));
 
   if (c == '.' && isdigit(next_char())) {
     fseek(input_file, -1, SEEK_CUR);
     do {
-      token.value[i++] = c;
+      token.lexeme[i++] = c;
       c = next_char();
     } while (isdigit(c));
     token.type = TOKEN_FLOAT_LITERAL;
@@ -68,13 +68,13 @@ Token recognize_number(char c) {
     token.type = TOKEN_INT_LITERAL;
   }
   fseek(input_file, -1, SEEK_CUR);
-  token.value[i] = '\0';
+  token.lexeme[i] = '\0';
   return token;
 }
 
 Token recognise_eof(char c) {
   Token token;
-  strcpy(token.value, "End of file");
+  strcpy(token.lexeme, "End of file");
   token.type = TOKEN_EOF;
   return token;
 }
@@ -159,10 +159,10 @@ Token recognise_string(char c) {
   do {
     c = next_char();
 
-    token.value[i++] = c;
+    token.lexeme[i++] = c;
 
     if (c == '\"') {
-      token.value[i - 1] = '\0'; // Null-terminate the string
+      token.lexeme[i - 1] = '\0'; // Null-terminate the string
       break; // Exit the loop upon encountering closing quote
     }
 
@@ -193,7 +193,7 @@ Token next_token() {
 
   if (c == EOF) {
     token.type = TOKEN_EOF;
-    strcpy(token.value, "EOF");
+    strcpy(token.lexeme, "EOF");
   }
 
   if (c == '"') {

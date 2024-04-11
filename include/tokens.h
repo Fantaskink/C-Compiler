@@ -89,7 +89,7 @@ static const char *token_names[NUM_TOKENS] = {"INT",
 
 typedef struct {
   TokenType type;
-  char value[255];
+  char lexeme[255];
 } Token;
 
 #endif /* TOKENS_H */
