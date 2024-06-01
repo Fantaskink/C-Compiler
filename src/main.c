@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
   FILE *file_pointer = fopen(argv[1], "r");
   if (file_pointer == NULL) {
     perror("File not found");
+
     return EXIT_FAILURE;
   }
 

@@ -1,6 +1,5 @@
 #ifndef TOKENS_H
 #define TOKENS_H
-#define VALUE_MAX
 
 typedef enum {
   // Primitive types
@@ -47,6 +46,8 @@ typedef enum {
   TOKEN_NEQ,
   TOKEN_AND,
   TOKEN_OR,
+
+  TOKEN_UNRECOGNIZED,
   TOKEN_EOF,
 
   NUM_TOKENS
@@ -89,7 +90,9 @@ static const char *token_names[NUM_TOKENS] = {"INT",
 
 typedef struct {
   TokenType type;
-  char lexeme[255];
+  char *lexeme;
+  int line;
+  int column;
 } Token;
 
 #endif /* TOKENS_H */

@@ -7,11 +7,38 @@
 #include "tokens.h"
 
 FILE *input_file;
+int current_line = 1;
+int current_column = 0;
 
-char next_char() { return fgetc(input_file); }
+char next_char() {
+  char c = fgetc(input_file);
+  if (c == '\n') {
+    current_line++;
+    current_column = 1;
+  } else {
+    current_column++;
+  }
+  return c;
+}
 
-Token check_reserved(const char *lexeme) {
-  Token token;
+char peek_char() {
+  char c = fgetc(input_file);
+  fseek(input_file, -1, SEEK_CUR);
+  return c;
+}
+
+void assign_lexeme(Token *token, const char *lexeme) {
+  token->lexeme = (char *)malloc(strlen(lexeme) + 1);
+  if (token->lexeme == NULL) {
+    fprintf(stderr, "Memory allocation error\n");
+    exit(EXIT_FAILURE);
+  }
+  strcpy(token->lexeme, lexeme);
+}
+
+// Check if token is a reserved keyword, return identifier if not, return
+// correct token type if reserved
+Token check_reserved(const char *lexeme, Token token) {
   int i;
   for (i = 0; i < NUM_TOKENS; i++) {
     char temp[255];
@@ -23,70 +50,81 @@ Token check_reserved(const char *lexeme) {
 
     if (strcmp(lexeme, temp) == 0) {
       token.type = (TokenType)i;
-      strcpy(token.lexeme, token_names[i]);
+      assign_lexeme(&token, token_names[i]);
       return token;
     }
   }
 
   token.type = TOKEN_IDENTIFIER;
-  strcpy(token.lexeme, lexeme);
+  assign_lexeme(&token, lexeme);
   return token;
 }
 
-Token recognize_alpha(char c) {
-  Token token;
+// Recognize an identifier
+Token recognize_alpha(char c, Token token) {
   int i = 0;
+  char lexeme[255];
   do {
-    token.lexeme[i++] = c;
+    lexeme[i++] = c;
     c = next_char();
   } while (isalnum(c) || c == '_');
 
-  token.lexeme[i] = '\0';
+  lexeme[i] = '\0';
   fseek(input_file, -1, SEEK_CUR);
+  current_column--;
+  if (c == '\n') {
+    current_line--;
+  }
+
+  assign_lexeme(&token, lexeme);
+
   token.type = TOKEN_IDENTIFIER;
 
-  token = check_reserved(token.lexeme); // Check if token is reserved
+  token = check_reserved(token.lexeme, token); // Check if token is reserved
 
   return token;
 }
 
-Token recognize_number(char c) {
-  Token token;
+Token recognize_number(char c, Token token) {
   int i = 0;
+  char lexeme[255];
   do {
-    token.lexeme[i++] = c;
+    lexeme[i++] = c;
     c = next_char();
   } while (isdigit(c));
 
-  if (c == '.' && isdigit(next_char())) {
-    fseek(input_file, -1, SEEK_CUR);
+  if (c == '.' && isdigit(peek_char())) {
     do {
-      token.lexeme[i++] = c;
+      lexeme[i++] = c;
       c = next_char();
     } while (isdigit(c));
     token.type = TOKEN_FLOAT_LITERAL;
   } else {
     token.type = TOKEN_INT_LITERAL;
   }
-  fseek(input_file, -1, SEEK_CUR);
-  token.lexeme[i] = '\0';
+  lexeme[i] = '\0';
+  assign_lexeme(&token, lexeme);
   return token;
 }
 
-Token recognise_eof(char c) {
-  Token token;
-  strcpy(token.lexeme, "End of file");
+Token recognise_eof(char c, Token token) {
+  char *lexeme = "EOF";
+  token.lexeme = lexeme;
   token.type = TOKEN_EOF;
   return token;
 }
 
-Token recognise_special(char c) {
-  Token token;
-  token.lexeme[0] = c;
-  char next_c = next_char();
+Token recognise_special(char c, Token token) {
+  char lexeme[3];
+  lexeme[0] = c;
+  lexeme[1] = '\0'; // Initialize to handle single character tokens by default
+
+  char next_c = peek_char();
   if (next_c == '=') {
-    token.lexeme[1] = next_c;
-    token.lexeme[2] = '\0';
+    next_char();
+    lexeme[1] = next_c;
+    lexeme[2] = '\0';
+
     switch (c) {
     case '=':
       token.type = TOKEN_EQ;
@@ -104,12 +142,11 @@ Token recognise_special(char c) {
       token.type = TOKEN_ASSIGN;
       break;
     }
+    assign_lexeme(&token, lexeme);
     return token;
   }
 
-  fseek(input_file, -1, SEEK_CUR);
   switch (c) {
-    token.lexeme[1] = '\0';
   case '+':
     token.type = TOKEN_PLUS;
     break;
@@ -150,25 +187,28 @@ Token recognise_special(char c) {
     token.type = TOKEN_ASSIGN;
     break;
   default:
-    token.type = TOKEN_EOF; // Assuming EOF for unrecognized characters
+    token.type = TOKEN_UNRECOGNIZED; // Assuming a separate token type for
+                                     // unrecognized characters
     break;
   }
+
+  assign_lexeme(&token, lexeme);
   return token;
 }
 
-Token recognise_string(char c) {
-  Token token;
+Token recognise_string(char c, Token token) {
+  char lexeme[255];
   token.type = TOKEN_STRING_LITERAL;
   int i = 0;
 
   do {
     c = next_char();
 
-    token.lexeme[i++] = c;
+    lexeme[i++] = c;
 
     if (c == '\"') {
-      token.lexeme[i - 1] = '\0'; // Null-terminate the string
-      break; // Exit the loop upon encountering closing quote
+      lexeme[i - 1] = '\0'; // Null-terminate the string
+      break;                // Exit the loop upon encountering closing quote
     }
 
     if (c == '\n') {
@@ -176,6 +216,8 @@ Token recognise_string(char c) {
       exit(EXIT_FAILURE); // Exiting upon error
     }
   } while (c != EOF);
+
+  assign_lexeme(&token, lexeme);
 
   return token;
 }
@@ -188,38 +230,39 @@ Token next_token() {
     c = next_char();
   } while (isspace(c));
 
+  token.line = current_line;
+  token.column = current_column;
+
   if (isalpha(c) || c == '_') {
-    return recognize_alpha(c);
+    return recognize_alpha(c, token);
   }
 
   if (isdigit(c)) {
-    return recognize_number(c);
+    return recognize_number(c, token);
   }
 
   if (c == EOF) {
     token.type = TOKEN_EOF;
-    strcpy(token.lexeme, "EOF");
+    char lexeme[3] = "EOF";
+    assign_lexeme(&token, lexeme);
     return token;
   }
 
   if (c == '"') {
-    return recognise_string(c);
+    return recognise_string(c, token);
   }
 
   // Ignore comments
   if (c == '/') {
-    if (next_char() == '/') {
+    if (peek_char() == '/') {
       while (c != '\n' && c != '\r') {
         c = next_char();
       }
       return next_token();
-    } else {
-      // Move file pointer back after checking one ahead for a
-      fseek(input_file, -1, SEEK_CUR);
     }
   }
 
-  return recognise_special(c);
+  return recognise_special(c, token);
 }
 
 node_t *tokenize_input(FILE *file_pointer) {
