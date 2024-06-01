@@ -243,8 +243,7 @@ Token next_token() {
 
   if (c == EOF) {
     token.type = TOKEN_EOF;
-    char lexeme[3] = "EOF";
-    assign_lexeme(&token, lexeme);
+    assign_lexeme(&token, "EOF");
     return token;
   }
 

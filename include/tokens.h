@@ -86,6 +86,7 @@ static const char *token_names[NUM_TOKENS] = {"INT",
                                               "NEQ",
                                               "AND",
                                               "OR",
+                                              "UNRECOGNIZED",
                                               "EOF"};
 
 typedef struct {
