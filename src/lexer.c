@@ -261,7 +261,14 @@ Token next_token() {
     }
   }
 
-  return recognise_special(c, token);
+  token = recognise_special(c, token);
+  if (token.type == TOKEN_UNRECOGNIZED) {
+    fprintf(stderr,
+            "Error: unrecognized character at line %d, column %d: '%c'\n",
+            token.line, token.column, c);
+    exit(EXIT_FAILURE);
+  }
+  return token;
 }
 
 node_t *tokenize_input(FILE *file_pointer) {
