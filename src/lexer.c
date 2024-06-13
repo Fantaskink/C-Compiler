@@ -14,7 +14,7 @@ char next_char() {
   char c = fgetc(input_file);
   if (c == '\n') {
     current_line++;
-    current_column = 1;
+    current_column = 0;
   } else {
     current_column++;
   }
@@ -88,10 +88,10 @@ Token recognize_alpha(char c, Token token) {
 Token recognize_number(char c, Token token) {
   int i = 0;
   char lexeme[255];
-  do {
-    lexeme[i++] = c;
+  while (isdigit(peek_char())) {
     c = next_char();
-  } while (isdigit(c));
+    lexeme[i++] = c;
+  }
 
   if (c == '.' && isdigit(peek_char())) {
     do {
@@ -99,6 +99,10 @@ Token recognize_number(char c, Token token) {
       c = next_char();
     } while (isdigit(c));
     token.type = TOKEN_FLOAT_LITERAL;
+  } else if (isalpha(c)) {
+    fprintf(stderr, "Error: Incorrect character \'%c\' in decimal constant\n",
+            c);
+    exit(EXIT_FAILURE);
   } else {
     token.type = TOKEN_INT_LITERAL;
   }
@@ -139,7 +143,7 @@ Token recognise_special(char c, Token token) {
       token.type = TOKEN_GTE;
       break;
     default:
-      token.type = TOKEN_ASSIGN;
+      token.type = TOKEN_UNRECOGNIZED;
       break;
     }
     assign_lexeme(&token, lexeme);
@@ -186,6 +190,9 @@ Token recognise_special(char c, Token token) {
   case '=':
     token.type = TOKEN_ASSIGN;
     break;
+  case '&':
+    token.type = TOKEN_AMPERSAND;
+    break;
   default:
     token.type = TOKEN_UNRECOGNIZED; // Assuming a separate token type for
                                      // unrecognized characters
@@ -201,21 +208,24 @@ Token recognise_string(char c, Token token) {
   token.type = TOKEN_STRING_LITERAL;
   int i = 0;
 
-  do {
-    c = next_char();
-
-    lexeme[i++] = c;
-
+  while ((c = next_char()) != EOF) {
     if (c == '\"') {
-      lexeme[i - 1] = '\0'; // Null-terminate the string
-      break;                // Exit the loop upon encountering closing quote
+      lexeme[i] = '\0'; // Null-terminate the string
+      break;
     }
 
     if (c == '\n') {
       fprintf(stderr, "Error: Missing closing '\"'\n");
       exit(EXIT_FAILURE); // Exiting upon error
     }
-  } while (c != EOF);
+
+    lexeme[i++] = c;
+  }
+
+  if (c == EOF) {
+    fprintf(stderr, "Error: Unexpected EOF while reading string literal\n");
+    exit(EXIT_FAILURE);
+  }
 
   assign_lexeme(&token, lexeme);
 

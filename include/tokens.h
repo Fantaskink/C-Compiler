@@ -36,6 +36,7 @@ typedef enum {
   TOKEN_DIV,
   TOKEN_MOD,
   TOKEN_ASSIGN,
+  TOKEN_AMPERSAND,
 
   // Comparison
   TOKEN_LT,
@@ -78,6 +79,7 @@ static const char *token_names[NUM_TOKENS] = {"INT",
                                               "DIV",
                                               "MOD",
                                               "ASSIGN",
+                                              "AMPERSAND",
                                               "LT",
                                               "GT",
                                               "LTE",
