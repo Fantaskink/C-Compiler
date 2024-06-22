@@ -61,6 +61,16 @@ void add_child(ASTNode_t *parent, ASTNode_t *child) {
   parent->children[parent->child_count++] = child;
 }
 
+void free_ast_node(ASTNode_t *node) {
+  if (node == NULL)
+    return;
+  for (size_t i = 0; i < node->child_count; i++) {
+    free_ast_node(node->children[i]);
+  }
+  free(node);
+  free(node->children);
+}
+
 ASTNode_t *translationUnit() {
   ASTNode_t *ast = create_ast_node(AST_TRANSLATION_UNIT, NULL);
 
@@ -95,23 +105,33 @@ ASTNode_t *functionDefinition() {
 
   ASTNode_t *ident = identifier();
   if (ident == NULL) {
-    free(type);
+    free_ast_node(type);
     backtrack(backup);
     return NULL;
   }
 
   ASTNode_t *params = parameterList();
   if (params == NULL) {
-    free(type);
-    free(ident);
+    free_ast_node(type);
+    free_ast_node(ident);
     backtrack(backup);
     return NULL;
+  }
+
+  if (current_token.type == TOKEN_SEMICOLON) {
+    advance();
+    ASTNode_t *node = create_ast_node(AST_FUNCTION_DECL, NULL);
+    add_child(node, type);
+    add_child(node, ident);
+    add_child(node, params);
+    return node;
   }
 
   ASTNode_t *node = create_ast_node(AST_FUNCTION_DEF, NULL);
   add_child(node, type);
   add_child(node, ident);
   add_child(node, params);
+
   return node;
 }
 
@@ -186,13 +206,13 @@ ASTNode_t *paramDecl() {
   ASTNode_t *param_decl = create_ast_node(AST_PARAM_DECL, NULL);
   ASTNode_t *type = typeSpecifier();
   if (type == NULL) {
-    free(param_decl);
+    free_ast_node(param_decl);
     return NULL;
   }
   add_child(param_decl, type);
   ASTNode_t *ident = identifier();
   if (ident == NULL) {
-    free(param_decl);
+    free_ast_node(param_decl);
     return NULL;
   }
 

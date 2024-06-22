@@ -19,9 +19,10 @@ int main(int argc, char *argv[]) {
 
   node_t *token_list = tokenize_input(file_pointer);
 
-  ASTNode_t *ast = get_ast(token_list);
-
   print_list(token_list);
+
+  ASTNode_t *ast = get_ast(token_list);
+  // printf("%d\n", ast->children[0]->children[2]->child_count);
 
   return 0;
 }
