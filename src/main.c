@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "linked_list.h"
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,6 +18,8 @@ int main(int argc, char *argv[]) {
   }
 
   node_t *token_list = tokenize_input(file_pointer);
+
+  ASTNode_t *ast = get_ast(token_list);
 
   print_list(token_list);
 
