@@ -259,6 +259,7 @@ ASTNode_t *declaration() {
              "constant\n");
       return NULL;
     }
+    add_child(node, variable);
   }
   if (current_token.type == TOKEN_SEMICOLON) {
     advance();
