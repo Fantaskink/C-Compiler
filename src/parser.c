@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "linked_list.h"
 #include "tokens.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 node_t *current_node;
@@ -15,9 +16,10 @@ ASTNode_t *parameterList();
 ASTNode_t *paramDecl();
 
 void advance() {
-  current_node = current_node->next;
-  current_token = current_node->token;
-  return;
+  if (current_node->next != NULL) {
+    current_node = current_node->next;
+    current_token = current_node->token;
+  }
 }
 
 void backtrack(node_t *backup) {
@@ -28,7 +30,8 @@ void backtrack(node_t *backup) {
 ASTNode_t *create_ast_node(ASTNodeType type, Token *token) {
   ASTNode_t *node = malloc(sizeof(ASTNode_t));
   if (node == NULL) {
-    return NULL;
+    perror("Failed to allocate memory for AST node");
+    exit(EXIT_FAILURE);
   }
   node->type = type;
   node->token = token;
@@ -52,7 +55,8 @@ void add_child(ASTNode_t *parent, ASTNode_t *child) {
   }
   if (parent->children == NULL) {
     // Handle memory allocation failure
-    exit(-1);
+    perror("Failed to allocate memory for children nodes");
+    exit(EXIT_FAILURE);
   }
   parent->children[parent->child_count++] = child;
 }
@@ -61,7 +65,13 @@ ASTNode_t *translationUnit() {
   ASTNode_t *ast = create_ast_node(AST_TRANSLATION_UNIT, NULL);
 
   while (current_token.type != TOKEN_EOF) {
-    externalDeclaration();
+    ASTNode_t *decl = externalDeclaration();
+    if (decl != NULL) {
+      add_child(ast, decl);
+    } else {
+      perror("Failed to parse external declaration");
+      exit(EXIT_FAILURE);
+    }
   }
 
   return ast;
@@ -85,12 +95,15 @@ ASTNode_t *functionDefinition() {
 
   ASTNode_t *ident = identifier();
   if (ident == NULL) {
+    free(type);
     backtrack(backup);
     return NULL;
   }
 
   ASTNode_t *params = parameterList();
   if (params == NULL) {
+    free(type);
+    free(ident);
     backtrack(backup);
     return NULL;
   }
@@ -105,18 +118,15 @@ ASTNode_t *functionDefinition() {
 ASTNode_t *typeSpecifier() {
   switch (current_token.type) {
   case TOKEN_INT:
-    break;
   case TOKEN_FLOAT:
-    break;
-  case TOKEN_VOID:
-    break;
+  case TOKEN_VOID: {
+    ASTNode_t *node = create_ast_node(AST_TYPE_SPEC, &current_token);
+    advance();
+    return node;
+  }
   default:
     return NULL;
   }
-
-  ASTNode_t *node = create_ast_node(AST_TYPE_SPEC, &current_token);
-  advance();
-  return node;
 }
 
 ASTNode_t *identifier() {
@@ -136,25 +146,39 @@ ASTNode_t *parameterList() {
   advance(); // Skip left parenthesis
 
   if (current_token.type == TOKEN_RPAREN) {
-    ASTNode_t *empty = create_ast_node(AST_PARAM_LIST, NULL);
     advance();
-    return empty;
+    return paramList;
   }
 
   ASTNode_t *param_decl = paramDecl();
 
+  if (param_decl == NULL) {
+    perror("Invalid parameter\n");
+    exit(EXIT_FAILURE);
+  }
+
+  int ended_on_comma = 0;
+
   while (param_decl != NULL) {
+    ended_on_comma = 0;
     add_child(paramList, param_decl);
     if (current_token.type == TOKEN_COMMA) {
       advance();
+      ended_on_comma = 1;
     }
     param_decl = paramDecl();
+  }
+
+  if (ended_on_comma) {
+    perror("Comma in parameter list must be follow by another parameter\n");
+    exit(EXIT_FAILURE);
   }
 
   if (current_token.type == TOKEN_RPAREN) {
     advance();
     return paramList;
   }
+  perror("Expected closing parenthesis in parameter list");
   return NULL;
 }
 
@@ -162,16 +186,17 @@ ASTNode_t *paramDecl() {
   ASTNode_t *param_decl = create_ast_node(AST_PARAM_DECL, NULL);
   ASTNode_t *type = typeSpecifier();
   if (type == NULL) {
+    free(param_decl);
     return NULL;
   }
   add_child(param_decl, type);
-  advance();
   ASTNode_t *ident = identifier();
-  if (ident != NULL) {
-    advance();
-    add_child(param_decl, ident);
+  if (ident == NULL) {
+    free(param_decl);
+    return NULL;
   }
 
+  add_child(param_decl, ident);
   return param_decl;
 }
 
