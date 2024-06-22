@@ -88,24 +88,41 @@ Token recognize_alpha(char c, Token token) {
 Token recognize_number(char c, Token token) {
   int i = 0;
   char lexeme[255];
+
+  // Consume the first digit if `c` is already a digit
+  if (isdigit(c)) {
+    lexeme[i++] = c;
+  }
+
+  // Read integer part
   while (isdigit(peek_char())) {
     c = next_char();
     lexeme[i++] = c;
   }
 
-  if (c == '.' && isdigit(peek_char())) {
-    do {
-      lexeme[i++] = c;
-      c = next_char();
-    } while (isdigit(c));
-    token.type = TOKEN_FLOAT_LITERAL;
-  } else if (isalpha(c)) {
-    fprintf(stderr, "Error: Incorrect character \'%c\' in decimal constant\n",
-            c);
+  // Check for decimal part
+  if (peek_char() == '.') {
+    c = next_char(); // Consume the decimal point
+    lexeme[i++] = c;
+    if (isdigit(peek_char())) {
+      // Read fractional part
+      do {
+        c = next_char();
+        lexeme[i++] = c;
+      } while (isdigit(peek_char()));
+      token.type = TOKEN_FLOAT_LITERAL;
+    } else {
+      fprintf(stderr, "Error: Expected digit after decimal point\n");
+      exit(EXIT_FAILURE);
+    }
+  } else if (isalpha(peek_char())) {
+    c = next_char();
+    fprintf(stderr, "Error: Incorrect character '%c' in decimal constant\n", c);
     exit(EXIT_FAILURE);
   } else {
     token.type = TOKEN_INT_LITERAL;
   }
+
   lexeme[i] = '\0';
   assign_lexeme(&token, lexeme);
   return token;

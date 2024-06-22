@@ -1,6 +1,7 @@
 #include "lexer.h"
 #include "linked_list.h"
 #include "parser.h"
+#include "pretty_printer.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,7 +23,8 @@ int main(int argc, char *argv[]) {
   print_list(token_list);
 
   ASTNode_t *ast = get_ast(token_list);
-  // printf("%d\n", ast->children[0]->children[2]->child_count);
+
+  print_ast(ast);
 
   return 0;
 }

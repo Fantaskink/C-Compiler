@@ -13,7 +13,11 @@ typedef enum {
   AST_IDENTIFIER,
   AST_PARAM_LIST,
   AST_PARAM_DECL,
-  AST_UNKNOWN
+  AST_DECL,
+  AST_INT_LITERAL,
+  AST_FLOAT_LITERAL,
+  AST_UNKNOWN,
+  AST_NUM_TYPES,
 } ASTNodeType;
 
 typedef struct ASTNode {

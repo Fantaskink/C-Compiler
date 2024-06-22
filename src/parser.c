@@ -3,6 +3,7 @@
 #include "tokens.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 node_t *current_node;
 Token current_token;
@@ -14,6 +15,8 @@ ASTNode_t *typeSpecifier();
 ASTNode_t *identifier();
 ASTNode_t *parameterList();
 ASTNode_t *paramDecl();
+ASTNode_t *declaration();
+ASTNode_t *decimalConstant();
 
 void advance() {
   if (current_node->next != NULL) {
@@ -33,11 +36,24 @@ ASTNode_t *create_ast_node(ASTNodeType type, Token *token) {
     perror("Failed to allocate memory for AST node");
     exit(EXIT_FAILURE);
   }
+
+  if (token != NULL) {
+    node->token = malloc(sizeof(Token));
+    if (node->token == NULL) {
+      perror("Failed to allocate memory for AST node token");
+      free(node);
+      exit(EXIT_FAILURE);
+    }
+    memcpy(node->token, token, sizeof(Token));
+  } else {
+    node->token = NULL;
+  }
+
   node->type = type;
-  node->token = token;
   node->children = NULL;
   node->child_count = 0;
   node->child_capacity = 0;
+
   return node;
 }
 
@@ -91,7 +107,7 @@ ASTNode_t *externalDeclaration() {
   ASTNode_t *node = functionDefinition();
 
   if (node == NULL) {
-    // declaration
+    node = declaration();
   }
   return node;
 }
@@ -218,6 +234,51 @@ ASTNode_t *paramDecl() {
 
   add_child(param_decl, ident);
   return param_decl;
+}
+
+ASTNode_t *declaration() {
+  ASTNode_t *node = create_ast_node(AST_DECL, NULL);
+  ASTNode_t *type = typeSpecifier();
+  if (type == NULL) {
+    free_ast_node(node);
+    return NULL;
+  }
+  ASTNode_t *ident = identifier();
+  if (type == NULL) {
+    free_ast_node(node);
+    return NULL;
+  }
+  add_child(node, type);
+  add_child(node, ident);
+
+  if (current_token.type == TOKEN_ASSIGN) {
+    advance();
+    ASTNode_t *variable = decimalConstant();
+    if (variable == NULL) {
+      perror("Assignment in variable declaration must be followed by a decimal "
+             "constant\n");
+      return NULL;
+    }
+  }
+  if (current_token.type == TOKEN_SEMICOLON) {
+    advance();
+    return node;
+  }
+  return NULL;
+}
+
+ASTNode_t *decimalConstant() {
+  if (current_token.type == TOKEN_INT_LITERAL) {
+    ASTNode_t *constant = create_ast_node(AST_INT_LITERAL, &current_token);
+    advance();
+    return constant;
+  }
+  if (current_token.type == TOKEN_FLOAT_LITERAL) {
+    ASTNode_t *constant = create_ast_node(AST_FLOAT_LITERAL, &current_token);
+    advance();
+    return constant;
+  }
+  return NULL;
 }
 
 ASTNode_t *get_ast(node_t *head) {
