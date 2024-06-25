@@ -39,14 +39,16 @@ void delete_list(node_t *head) {
 void print_list(node_t *head) {
   node_t *current = head;
 
+  printf("Tokens:\n");
+
   while (current != NULL) {
     TokenType token_type = current->token.type;
     char *lexeme = current->token.lexeme;
 
-    printf("Token: %s, ", token_names[token_type]);
-    printf("Lexeme: %s, ", lexeme);
-    printf("Line: %d, ", current->token.line);
-    printf("Column: %d\n", current->token.column);
+    printf("%s, ", token_names[token_type]);
+    printf("Lexeme: '%s', ", lexeme);
+    printf("L: %d, ", current->token.line);
+    printf("C: %d\n", current->token.column);
 
     current = current->next;
   }
