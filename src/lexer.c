@@ -36,14 +36,15 @@ void assign_lexeme(Token *token, const char *lexeme) {
   strcpy(token->lexeme, lexeme);
 }
 
-// Check if token is a reserved keyword, return identifier if not, return
-// correct token type if reserved
+/* Check if token is a reserved keyword, return identifier if not, return
+ * correct token type if reserved */
 Token check_reserved(const char *lexeme, Token token) {
   int i;
   for (i = 0; i < NUM_TOKENS; i++) {
     char temp[255];
+    /* Make a lowercase copy of the token's name to see if it matches a reserved
+     * keyword */
     strcpy(temp, token_names[i]);
-
     for (int j = 0; temp[j]; j++) {
       temp[j] = tolower(temp[j]);
     }
