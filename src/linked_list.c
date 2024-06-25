@@ -43,7 +43,7 @@ void print_list(node_t *head) {
     TokenType token_type = current->token.type;
     char *lexeme = current->token.lexeme;
 
-    printf("Token type: %s, ", token_names[token_type]);
+    printf("Token: %s, ", token_names[token_type]);
     printf("Lexeme: %s, ", lexeme);
     printf("Line: %d, ", current->token.line);
     printf("Column: %d\n", current->token.column);

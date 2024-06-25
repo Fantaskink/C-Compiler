@@ -50,7 +50,7 @@ Token check_reserved(const char *lexeme, Token token) {
 
     if (strcmp(lexeme, temp) == 0) {
       token.type = (TokenType)i;
-      assign_lexeme(&token, token_names[i]);
+      assign_lexeme(&token, (const char *)temp);
       return token;
     }
   }
