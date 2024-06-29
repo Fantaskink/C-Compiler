@@ -10,16 +10,17 @@ typedef struct {
   Token current_token;
 } Parser;
 
-ASTNode_t *translationUnit(Parser *parser);
-ASTNode_t *externalDeclaration(Parser *parser);
-ASTNode_t *functionDefinition(Parser *parser);
-ASTNode_t *typeSpecifier(Parser *parser);
+ASTNode_t *translation_unit(Parser *parser);
+ASTNode_t *external_declaration(Parser *parser);
+ASTNode_t *function_definition(Parser *parser);
+ASTNode_t *type_specifier(Parser *parser);
 ASTNode_t *identifier(Parser *parser);
-ASTNode_t *parameterList(Parser *parser);
-ASTNode_t *paramDecl(Parser *parser);
-ASTNode_t *compoundStatement(Parser *parser);
+ASTNode_t *parameter_list(Parser *parser);
+ASTNode_t *parameter_declaration(Parser *parser);
+ASTNode_t *compound_statement(Parser *parser);
+ASTNode_t *statement(Parser *parser);
 ASTNode_t *declaration(Parser *parser);
-ASTNode_t *decimalConstant(Parser *parser);
+ASTNode_t *decimal_constant(Parser *parser);
 ASTNode_t *get_ast(node_t *head);
 
 void advance(Parser *parser) {
@@ -91,11 +92,11 @@ void free_ast_node(ASTNode_t *node) {
   free(node->children);
 }
 
-ASTNode_t *translationUnit(Parser *parser) {
+ASTNode_t *translation_unit(Parser *parser) {
   ASTNode_t *ast = create_ast_node(AST_TRANSLATION_UNIT, NULL);
 
   while (parser->current_token.type != TOKEN_EOF) {
-    ASTNode_t *decl = externalDeclaration(parser);
+    ASTNode_t *decl = external_declaration(parser);
     if (decl != NULL) {
       add_child(ast, decl);
     } else {
@@ -107,8 +108,8 @@ ASTNode_t *translationUnit(Parser *parser) {
   return ast;
 }
 
-ASTNode_t *externalDeclaration(Parser *parser) {
-  ASTNode_t *node = functionDefinition(parser);
+ASTNode_t *external_declaration(Parser *parser) {
+  ASTNode_t *node = function_definition(parser);
 
   if (node == NULL) {
     node = declaration(parser);
@@ -116,10 +117,10 @@ ASTNode_t *externalDeclaration(Parser *parser) {
   return node;
 }
 
-ASTNode_t *functionDefinition(Parser *parser) {
+ASTNode_t *function_definition(Parser *parser) {
   node_t *backup = parser->current_node;
 
-  ASTNode_t *type = typeSpecifier(parser);
+  ASTNode_t *type = type_specifier(parser);
   if (type == NULL)
     return NULL;
 
@@ -130,7 +131,7 @@ ASTNode_t *functionDefinition(Parser *parser) {
     return NULL;
   }
 
-  ASTNode_t *params = parameterList(parser);
+  ASTNode_t *params = parameter_list(parser);
   if (params == NULL) {
     free_ast_node(type);
     free_ast_node(ident);
@@ -155,7 +156,7 @@ ASTNode_t *functionDefinition(Parser *parser) {
   return node;
 }
 
-ASTNode_t *typeSpecifier(Parser *parser) {
+ASTNode_t *type_specifier(Parser *parser) {
   switch (parser->current_token.type) {
   case TOKEN_INT:
   case TOKEN_FLOAT:
@@ -178,7 +179,7 @@ ASTNode_t *identifier(Parser *parser) {
   return NULL;
 }
 
-ASTNode_t *parameterList(Parser *parser) {
+ASTNode_t *parameter_list(Parser *parser) {
   if (parser->current_token.type != TOKEN_LPAREN) {
     return NULL;
   }
@@ -190,7 +191,7 @@ ASTNode_t *parameterList(Parser *parser) {
     return paramList;
   }
 
-  ASTNode_t *param_decl = paramDecl(parser);
+  ASTNode_t *param_decl = parameter_declaration(parser);
 
   if (param_decl == NULL) {
     perror("Invalid parameter\n");
@@ -206,7 +207,7 @@ ASTNode_t *parameterList(Parser *parser) {
       advance(parser);
       ended_on_comma = 1;
     }
-    param_decl = paramDecl(parser);
+    param_decl = parameter_declaration(parser);
   }
 
   if (ended_on_comma) {
@@ -222,9 +223,9 @@ ASTNode_t *parameterList(Parser *parser) {
   return NULL;
 }
 
-ASTNode_t *paramDecl(Parser *parser) {
+ASTNode_t *parameter_declaration(Parser *parser) {
   ASTNode_t *param_decl = create_ast_node(AST_PARAM_DECL, NULL);
-  ASTNode_t *type = typeSpecifier(parser);
+  ASTNode_t *type = type_specifier(parser);
   if (type == NULL) {
     free_ast_node(param_decl);
     return NULL;
@@ -240,21 +241,21 @@ ASTNode_t *paramDecl(Parser *parser) {
   return param_decl;
 }
 
-ASTNode_t *compoundStatement(Parser *parser) {
+ASTNode_t *compound_statement(Parser *parser) {
   if (parser->current_token.type != TOKEN_LBRACE) {
     return NULL;
   }
   advance(parser);
 
   while (parser->current_token.type != TOKEN_RBRACE) {
-    // ASTNode_t *node = statement(parser);
+    ASTNode_t *node = statement(parser);
     return NULL;
   }
 }
 
 ASTNode_t *declaration(Parser *parser) {
   ASTNode_t *node = create_ast_node(AST_DECL, NULL);
-  ASTNode_t *type = typeSpecifier(parser);
+  ASTNode_t *type = type_specifier(parser);
   if (type == NULL) {
     free_ast_node(node);
     return NULL;
@@ -269,7 +270,7 @@ ASTNode_t *declaration(Parser *parser) {
 
   if (parser->current_token.type == TOKEN_ASSIGN) {
     advance(parser);
-    ASTNode_t *variable = decimalConstant(parser);
+    ASTNode_t *variable = decimal_constant(parser);
     if (variable == NULL) {
       perror("Assignment in variable declaration must be followed by a decimal "
              "constant\n");
@@ -284,7 +285,7 @@ ASTNode_t *declaration(Parser *parser) {
   return NULL;
 }
 
-ASTNode_t *decimalConstant(Parser *parser) {
+ASTNode_t *decimal_constant(Parser *parser) {
   if (parser->current_token.type == TOKEN_INT_LITERAL) {
     ASTNode_t *constant =
         create_ast_node(AST_INT_LITERAL, &parser->current_token);
@@ -307,7 +308,7 @@ ASTNode_t *get_ast(node_t *head) {
 
   if (parser.current_token.type != TOKEN_EOF) {
 
-    return translationUnit(&parser);
+    return translation_unit(&parser);
   }
   return NULL;
 }
