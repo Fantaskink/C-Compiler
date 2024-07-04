@@ -197,7 +197,10 @@ Token recognise_special(char c, Token token) {
     token.type = TOKEN_STAR;
     break;
   case '/':
-    token.type = TOKEN_DIV;
+    token.type = TOKEN_SLASH;
+    break;
+  case '%':
+    token.type = TOKEN_MOD;
     break;
   case '<':
     token.type = TOKEN_LT;

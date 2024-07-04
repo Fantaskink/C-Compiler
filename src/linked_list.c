@@ -28,7 +28,6 @@ void push(node_t **head, Token token) {
 }
 
 void delete_list(node_t *head) {
-
   while (head != NULL) {
     node_t *temp = head;
     head = head->next;
