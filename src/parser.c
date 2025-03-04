@@ -333,6 +333,13 @@ ASTNode_t *expression_statement(Parser *parser) {
 }
 
 ASTNode_t *expression(Parser *parser) {
+  ASTNode_t *node = term(parser);
+  return NULL;
+}
+
+ASTNode_t *term(Parser *parser) { return NULL; }
+/*
+ASTNode_t *expression(Parser *parser) {
   ASTNode_t *node = term(parser); // Parse the first term
 
   while (parser->current_token.type == TOKEN_PLUS ||
@@ -379,6 +386,7 @@ ASTNode_t *term(Parser *parser) {
   return node;
 }
 
+
 ASTNode_t *factor(Parser *parser) {
   if (parser->current_token.type == TOKEN_LPAREN) {
     advance(parser);
@@ -401,6 +409,8 @@ ASTNode_t *factor(Parser *parser) {
     return NULL;
   }
 }
+*/
+
 ASTNode_t *assignment_expression(Parser *parser) { return NULL; }
 
 ASTNode_t *declaration(Parser *parser) {

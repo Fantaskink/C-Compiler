@@ -22,9 +22,9 @@ int main(int argc, char *argv[]) {
 
   print_list(token_list);
 
-  ASTNode_t *ast = get_ast(token_list);
+  //ASTNode_t *ast = get_ast(token_list);
 
-  print_ast(ast);
+  //print_ast(ast);
 
   return 0;
 }
